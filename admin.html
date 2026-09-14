@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blue Cart | Admin Management Console</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="background: #f1f5f9;">
+
+  <!-- ADMIN HEADER -->
+  <header style="background: #0f172a; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-weight: 800; font-size: 1.2rem; color: #38bdf8;">BLUE CART</span>
+      <span style="background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">ADMIN PORTAL</span>
+    </div>
+    <a href="index.html" class="btn btn-sm btn-outline-white"><i class="fa-solid fa-arrow-left"></i> View Live Store</a>
+  </header>
+
+  <div class="container" style="max-width: 1100px; padding: 20px 16px;">
+
+    <!-- TOP ADMIN UPI SETTING -->
+    <div class="card" style="padding: 16px; margin-bottom: 20px; background: #ffffff; border-left: 5px solid #2563eb;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h4 style="color: var(--primary);"><i class="fa-solid fa-qrcode"></i> Store Admin UPI Settings</h4>
+          <small style="color: var(--muted);">Customer payments will be directed to this UPI ID</small>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="admin-upi-input" placeholder="Enter your UPI ID (e.g. name@okaxis)" class="form-input" style="width: 250px;" />
+          <button class="btn btn-primary btn-sm" onclick="saveAdminUpi()"><i class="fa-solid fa-floppy-disk"></i> Save UPI ID</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; overflow-x: auto;">
+      <button class="btn btn-primary btn-sm" id="tab-orders-btn" onclick="switchAdminTab('orders')"><i class="fa-solid fa-box"></i> Orders & UPI</button>
+      <button class="btn btn-outline btn-sm" id="tab-products-btn" onclick="switchAdminTab('products')"><i class="fa-solid fa-boxes-stacked"></i> Manage Products</button>
+      <button class="btn btn-outline btn-sm" id="tab-categories-btn" onclick="switchAdminTab('categories')"><i class="fa-solid fa-layer-group"></i> Categories</button>
+      <button class="btn btn-outline btn-sm" id="tab-withdrawals-btn" onclick="switchAdminTab('withdrawals')"><i class="fa-solid fa-money-bill-transfer"></i> Reseller Payouts</button>
+    </div>
+
+    <!-- TAB 1: ORDER MANAGEMENT -->
+    <div id="admin-tab-orders">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3>Orders & Payment Verification</h3>
+        <button class="btn btn-sm btn-outline" onclick="loadAdminOrders()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Payment & UTR Ref</th>
+              <th>Amount</th>
+              <th>Payment Status</th>
+              <th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody id="admin-orders-body">
+            <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: PRODUCT MANAGEMENT (WITH COD ON/OFF) -->
+    <div id="admin-tab-products" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+        
+        <!-- Add Product Form -->
+        <div class="card" style="padding: 20px;">
+          <h3>Add New Wholesale Product</h3>
+          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">This product will instantly appear in the reseller catalog.</p>
+
+          <form id="add-product-form" onsubmit="handleAdminAddProduct(event)" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" id="p-add-name" placeholder="Product Title (e.g. Silk Printed Saree)" required class="form-input" />
+            
+            <div style="display: flex; gap: 10px;">
+              <select id="p-add-cat" class="form-input" style="flex: 1;" required>
+                <!-- Populated dynamically from categories -->
+              </select>
+              <input type="number" id="p-add-mrp" placeholder="MRP (₹)" required class="form-input" style="flex: 1;" />
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <input type="number" id="p-add-base" placeholder="Supplier Base Price (₹)" required class="form-input" style="flex: 1;" />
+              <input type="number" id="p-add-margin" placeholder="Suggested Margin (₹)" required class="form-input" style="flex: 1;" />
+            </div>
+
+            <input type="url" id="p-add-img" placeholder="Product Image URL (e.g. https://...)" required class="form-input" />
+            <textarea id="p-add-desc" placeholder="Product description, size details..." class="form-input" style="height: 70px;"></textarea>
+
+            <!-- CASH ON DELIVERY ON/OFF SETTING -->
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;">
+              <div>
+                <strong>Cash on Delivery (COD) Status:</strong>
+                <small style="display: block; color: var(--muted); font-size: 0.75rem;">Disable if this item requires prepaid UPI payment only</small>
+              </div>
+              <select id="p-add-cod" class="form-input" style="width: auto; font-weight: 700;">
+                <option value="true" selected>✅ COD: ON (Available)</option>
+                <option value="false">❌ COD: OFF (Prepaid UPI Only)</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-accent btn-block" style="padding: 12px;"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Product</button>
+          </form>
+        </div>
+
+        <!-- Live Products List Table with Quick COD Switch -->
+        <div class="card" style="padding: 20px;">
+          <h3>Live Store Products (<span id="admin-products-count">0</span>)</h3>
+          <div class="table-card" style="margin-top: 12px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>Base Price</th>
+                  <th>Margin</th>
+                  <th>COD Mode</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: CATEGORY MANAGEMENT (WITH PHOTO URL) -->
+    <div id="admin-tab-categories" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <!-- Create Category Form -->
+        <div class="card" style="padding: 20px;">
+          <h3>Create New Category</h3>
+          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 14px;">Add custom category with a real photo.</p>
+
+          <form id="add-category-form" onsubmit="handleAdminAddCategory(event)" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" id="cat-add-name" placeholder="Category Name (e.g. Kids Wear, Bags)" required class="form-input" />
+            
+            <!-- CATEGORY PHOTO URL INPUT -->
+            <input type="url" id="cat-add-photo" placeholder="Category Photo URL (e.g. https://...)" required class="form-input" />
+
+            <input type="text" id="cat-add-sub" placeholder="Tagline (e.g. TOP PICKS, 50% OFF)" required class="form-input" />
+            <input type="text" id="cat-add-desc" placeholder="Short description (e.g. Dresses, toys & daily essentials)" required class="form-input" />
+            
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted);">Banner Color Theme:</label>
+            <select id="cat-add-theme" class="form-input">
+              <option value="banner-women">Pink Gradient</option>
+              <option value="banner-electronics">Blue Gradient</option>
+              <option value="banner-men">Purple Gradient</option>
+              <option value="banner-home">Green Gradient</option>
+            </select>
+
+            <button type="submit" class="btn btn-accent btn-block" style="padding: 10px;"><i class="fa-solid fa-folder-plus"></i> Save Category</button>
+          </form>
+        </div>
+
+        <!-- Active Categories List with Photos -->
+        <div class="card" style="padding: 20px;">
+          <h3>Active Categories</h3>
+          <div class="table-card" style="margin-top: 12px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Category</th>
+                  <th>Tagline</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-categories-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: RESELLER WITHDRAWALS -->
+    <div id="admin-tab-withdrawals" style="display: none;">
+      <h3>Reseller UPI Payout Requests</h3>
+      <div class="table-card" style="margin-top: 12px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>Request ID</th><th>Reseller ID</th><th>Amount</th><th>UPI ID</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="admin-withdrawals-body">
+            <tr><td colspan="6" style="text-align: center; padding: 20px;">No pending requests.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

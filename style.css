@@ -1,9 +1,13 @@
+/* =====================================================================
+   BLUE CART SHOPPING - FULL UNIVERSAL STYLESHEET
+   Mobile-First Architecture, Photo Banners & Reseller Platform Theme
+   ===================================================================== */
+
 :root {
   --primary: #1d4ed8;
   --primary-dark: #1e3a8a;
   --secondary: #0284c7;
   --accent: #15803d;
-  --accent-light: #22c55e;
   --bg: #f8fafc;
   --card: #ffffff;
   --text: #0f172a;
@@ -12,7 +16,7 @@
   --danger: #ef4444;
   --success: #16a34a;
   --radius: 12px;
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
 }
 
 * {
@@ -113,7 +117,7 @@ body {
   position: relative;
 }
 
-/* BADGES & TOASTS */
+/* BADGES & TOAST NOTIFICATIONS */
 .badge {
   position: absolute;
   top: -6px;
@@ -150,7 +154,6 @@ body {
   padding: 10px 16px;
   border-radius: 8px;
   font-size: 0.85rem;
-  box-shadow: var(--shadow);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -175,13 +178,10 @@ body {
   font-size: 0.875rem;
   cursor: pointer;
   border: none;
-  transition: 0.2s;
   text-decoration: none;
 }
 .btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); }
 .btn-accent { background: var(--accent); color: white; }
-.btn-accent:hover { background: #14532d; }
 .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
 .btn-outline-white { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; }
 .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
@@ -194,21 +194,26 @@ body {
   color: white;
   border-radius: var(--radius);
   padding: 24px;
-  box-shadow: var(--shadow);
 }
-.hero-card h1 { font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
+.hero-card h1 { font-size: 1.5rem; font-weight: 800; }
 .hero-card p { font-size: 0.9rem; opacity: 0.9; margin: 8px 0 16px; }
-.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.hero-features { display: flex; gap: 16px; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; font-size: 0.8rem; flex-wrap: wrap; }
+.hero-actions { display: flex; gap: 10px; }
 
-/* CATEGORY SCROLL */
+/* TOP CATEGORY SCROLL PILLS (WITH PHOTOS) */
 .category-scroll {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  padding: 16px 0 8px;
+  padding: 14px 0 8px;
+  scrollbar-width: none;
+}
+.category-scroll::-webkit-scrollbar {
+  display: none;
 }
 .cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 14px;
   border-radius: 999px;
   background: var(--card);
@@ -217,14 +222,22 @@ body {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 .cat-pill.active {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
 }
+.cat-pill-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.1);
+}
 
-/* PRODUCT GRID */
+/* PRODUCT GRID & CARDS */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -243,22 +256,9 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
-.product-card {
-  display: flex;
-  flex-direction: column;
-}
-.product-card img {
-  width: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
-  background: #f1f5f9;
-}
-.product-card-body {
-  padding: 10px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+.product-card { display: flex; flex-direction: column; }
+.product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #f1f5f9; }
+.product-card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
 .product-title {
   font-size: 0.85rem;
   font-weight: 600;
@@ -273,7 +273,7 @@ body {
 .mrp-price { font-size: 0.75rem; text-decoration: line-through; color: var(--muted); }
 .profit-badge { background: #dcfce7; color: #166534; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
 
-/* PROFIT CALCULATOR BOX */
+/* RESELLER PROFIT CALCULATOR BOX */
 .calc-box {
   background: #eff6ff;
   border: 1px solid #bfdbfe;
@@ -296,7 +296,6 @@ body {
   font-size: 1rem;
   font-weight: 700;
   text-align: right;
-  outline: none;
 }
 .form-input {
   width: 100%;
@@ -306,7 +305,7 @@ body {
   font-size: 0.875rem;
 }
 
-/* MOBILE BOTTOM NAV */
+/* MOBILE BOTTOM APP NAVIGATION */
 .mobile-bottom-nav {
   position: fixed;
   bottom: 0;
@@ -329,30 +328,17 @@ body {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  position: relative;
 }
 .nav-tab.active { color: var(--primary); font-weight: 700; }
 .nav-tab i { font-size: 1.15rem; margin-bottom: 2px; }
 
-/* TABLE CARD FOR ADMIN */
-.table-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  overflow-x: auto;
-}
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  text-align: left;
-}
-.data-table th, .data-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
-}
+/* DATA TABLES & BADGES */
+.table-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table th, .data-table td { padding: 12px; border-bottom: 1px solid var(--border); }
 .data-table th { background: #f8fafc; font-weight: 700; }
 .product-gallery-img { width: 100%; border-radius: var(--radius); max-height: 380px; object-fit: cover; }
+
 /* PAYMENT METHOD SELECTOR CARDS */
 .payment-method-card {
   border: 2px solid var(--border);
@@ -385,54 +371,84 @@ body {
   border-radius: 4px;
   font-size: 0.75rem;
 }
-/* FEED CATEGORY BREAK BANNERS (ഇടയ്ക്കുള്ള കാറ്റഗറി ഡിസൈൻ) */
+
+/* INTERSPERSED CATEGORY BREAK BANNERS (WITH REAL PHOTOS) */
 .feed-category-section {
-  margin-top: 24px;
+  margin-top: 26px;
 }
 .feed-cat-banner {
   border-radius: var(--radius);
-  padding: 18px 20px;
+  padding: 16px 18px;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
   box-shadow: var(--shadow);
-}
-.feed-cat-banner.banner-women {
-  background: linear-gradient(135deg, #db2777, #f43f5e);
-}
-.feed-cat-banner.banner-electronics {
-  background: linear-gradient(135deg, #0284c7, #2563eb);
-}
-.feed-cat-banner.banner-men {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-}
-.feed-cat-banner.banner-home {
-  background: linear-gradient(135deg, #059669, #10b981);
+  overflow: hidden;
+  position: relative;
+  gap: 14px;
 }
 
-.feed-cat-banner .banner-sub {
+.feed-cat-banner.banner-women {
+  background: linear-gradient(135deg, #be185d, #ec4899);
+}
+.feed-cat-banner.banner-electronics {
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+}
+.feed-cat-banner.banner-men {
+  background: linear-gradient(135deg, #3730a3, #6366f1);
+}
+.feed-cat-banner.banner-home {
+  background: linear-gradient(135deg, #047857, #10b981);
+}
+
+.banner-text-col {
+  flex: 1;
+  z-index: 2;
+}
+.banner-text-col .banner-sub {
   font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   background: rgba(255, 255, 255, 0.25);
   padding: 2px 8px;
   border-radius: 4px;
   display: inline-block;
   margin-bottom: 4px;
 }
-.feed-cat-banner h3 {
+.banner-text-col h3 {
   font-size: 1.15rem;
   font-weight: 800;
   margin: 2px 0;
+  line-height: 1.25;
 }
-.feed-cat-banner p {
+.banner-text-col p {
   font-size: 0.78rem;
   opacity: 0.9;
+  margin-bottom: 10px;
 }
-.feed-cat-banner .btn {
-  white-space: nowrap;
+.btn-white-pill {
+  background: #ffffff;
+  color: var(--text);
   font-size: 0.75rem;
-  padding: 8px 14px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+}
+
+.banner-img-col {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+}
+.banner-cat-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
