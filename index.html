@@ -25,7 +25,7 @@
 
   <div class="container" style="max-width: 1100px; padding: 20px 16px;">
 
-    <!-- TOP ADMIN UPI CONFIGURATION CARD -->
+    <!-- TOP ADMIN UPI SETTING -->
     <div class="card" style="padding: 16px; margin-bottom: 20px; background: #ffffff; border-left: 5px solid #2563eb;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
@@ -42,8 +42,8 @@
     <!-- TABS -->
     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; overflow-x: auto;">
       <button class="btn btn-primary btn-sm" id="tab-orders-btn" onclick="switchAdminTab('orders')"><i class="fa-solid fa-box"></i> Orders & UPI</button>
-      <button class="btn btn-outline btn-sm" id="tab-categories-btn" onclick="switchAdminTab('categories')"><i class="fa-solid fa-layer-group"></i> Manage Categories</button>
-      <button class="btn btn-outline btn-sm" id="tab-products-btn" onclick="switchAdminTab('products')"><i class="fa-solid fa-plus-circle"></i> Add Product</button>
+      <button class="btn btn-outline btn-sm" id="tab-products-btn" onclick="switchAdminTab('products')"><i class="fa-solid fa-boxes-stacked"></i> Manage Products</button>
+      <button class="btn btn-outline btn-sm" id="tab-categories-btn" onclick="switchAdminTab('categories')"><i class="fa-solid fa-layer-group"></i> Categories</button>
       <button class="btn btn-outline btn-sm" id="tab-withdrawals-btn" onclick="switchAdminTab('withdrawals')"><i class="fa-solid fa-money-bill-transfer"></i> Reseller Payouts</button>
     </div>
 
@@ -73,20 +73,90 @@
       </div>
     </div>
 
-    <!-- TAB 2: CATEGORY MANAGEMENT (പുതിയ കാറ്റഗറികൾ ആഡ് ചെയ്യാൻ) -->
+    <!-- TAB 2: PRODUCT MANAGEMENT (WITH COD ON/OFF) -->
+    <div id="admin-tab-products" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+        
+        <!-- Add Product Form -->
+        <div class="card" style="padding: 20px;">
+          <h3>Add New Wholesale Product</h3>
+          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">This product will instantly appear in the reseller catalog.</p>
+
+          <form id="add-product-form" onsubmit="handleAdminAddProduct(event)" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" id="p-add-name" placeholder="Product Title (e.g. Silk Printed Saree)" required class="form-input" />
+            
+            <div style="display: flex; gap: 10px;">
+              <select id="p-add-cat" class="form-input" style="flex: 1;" required>
+                <!-- Populated dynamically from categories -->
+              </select>
+              <input type="number" id="p-add-mrp" placeholder="MRP (₹)" required class="form-input" style="flex: 1;" />
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <input type="number" id="p-add-base" placeholder="Supplier Base Price (₹)" required class="form-input" style="flex: 1;" />
+              <input type="number" id="p-add-margin" placeholder="Suggested Margin (₹)" required class="form-input" style="flex: 1;" />
+            </div>
+
+            <input type="url" id="p-add-img" placeholder="Product Image URL (e.g. https://...)" required class="form-input" />
+            <textarea id="p-add-desc" placeholder="Product description, size details..." class="form-input" style="height: 70px;"></textarea>
+
+            <!-- CASH ON DELIVERY ON/OFF SETTING -->
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;">
+              <div>
+                <strong>Cash on Delivery (COD) Status:</strong>
+                <small style="display: block; color: var(--muted); font-size: 0.75rem;">Disable if this item requires prepaid UPI payment only</small>
+              </div>
+              <select id="p-add-cod" class="form-input" style="width: auto; font-weight: 700;">
+                <option value="true" selected>✅ COD: ON (Available)</option>
+                <option value="false">❌ COD: OFF (Prepaid UPI Only)</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-accent btn-block" style="padding: 12px;"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Product</button>
+          </form>
+        </div>
+
+        <!-- Live Products List Table with Quick COD Switch -->
+        <div class="card" style="padding: 20px;">
+          <h3>Live Store Products (<span id="admin-products-count">0</span>)</h3>
+          <div class="table-card" style="margin-top: 12px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>Base Price</th>
+                  <th>Margin</th>
+                  <th>COD Mode</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: CATEGORY MANAGEMENT (WITH PHOTO URL) -->
     <div id="admin-tab-categories" style="display: none;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         
-        <!-- Add Category Form -->
+        <!-- Create Category Form -->
         <div class="card" style="padding: 20px;">
           <h3>Create New Category</h3>
-          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">This category will appear on the user homepage & banners.</p>
+          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 14px;">Add custom category with a real photo.</p>
 
           <form id="add-category-form" onsubmit="handleAdminAddCategory(event)" style="display: flex; flex-direction: column; gap: 12px;">
             <input type="text" id="cat-add-name" placeholder="Category Name (e.g. Kids Wear, Bags)" required class="form-input" />
-            <input type="text" id="cat-add-icon" placeholder="Emoji Icon (e.g. 👗, 🎧, 👶, 👜)" required class="form-input" />
-            <input type="text" id="cat-add-sub" placeholder="Tagline (e.g. TRENDING PICKS, TOP MARGIN)" required class="form-input" />
-            <input type="text" id="cat-add-desc" placeholder="Short Description (e.g. Best daily wear collection)" required class="form-input" />
+            
+            <!-- CATEGORY PHOTO URL INPUT -->
+            <input type="url" id="cat-add-photo" placeholder="Category Photo URL (e.g. https://...)" required class="form-input" />
+
+            <input type="text" id="cat-add-sub" placeholder="Tagline (e.g. TOP PICKS, 50% OFF)" required class="form-input" />
+            <input type="text" id="cat-add-desc" placeholder="Short description (e.g. Dresses, toys & daily essentials)" required class="form-input" />
             
             <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted);">Banner Color Theme:</label>
             <select id="cat-add-theme" class="form-input">
@@ -96,17 +166,18 @@
               <option value="banner-home">Green Gradient</option>
             </select>
 
-            <button type="submit" class="btn btn-accent btn-block" style="padding: 12px;"><i class="fa-solid fa-folder-plus"></i> Save Category</button>
+            <button type="submit" class="btn btn-accent btn-block" style="padding: 10px;"><i class="fa-solid fa-folder-plus"></i> Save Category</button>
           </form>
         </div>
 
-        <!-- Current Categories List -->
+        <!-- Active Categories List with Photos -->
         <div class="card" style="padding: 20px;">
-          <h3>Active Store Categories</h3>
+          <h3>Active Categories</h3>
           <div class="table-card" style="margin-top: 12px;">
             <table class="data-table">
               <thead>
                 <tr>
+                  <th>Photo</th>
                   <th>Category</th>
                   <th>Tagline</th>
                   <th>Action</th>
@@ -120,52 +191,16 @@
       </div>
     </div>
 
-    <!-- TAB 3: ADD PRODUCT (ഡൈനാമിക് കാറ്റഗറി ഡ്രോപ്പ്ഡൗൺ സഹിതം) -->
-    <div id="admin-tab-products" style="display: none; max-width: 600px;">
-      <div class="card" style="padding: 20px;">
-        <h3>Add New Wholesale Product</h3>
-        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">Product will instantly appear in the reseller catalog.</p>
-
-        <form id="add-product-form" onsubmit="handleAdminAddProduct(event)" style="display: flex; flex-direction: column; gap: 12px;">
-          <input type="text" id="p-add-name" placeholder="Product Title (e.g. Silk Printed Saree)" required class="form-input" />
-          
-          <div style="display: flex; gap: 10px;">
-            <select id="p-add-cat" class="form-input" style="flex: 1;" required>
-              <!-- Populated dynamically from Categories -->
-            </select>
-            <input type="number" id="p-add-mrp" placeholder="MRP (₹)" required class="form-input" style="flex: 1;" />
-          </div>
-
-          <div style="display: flex; gap: 10px;">
-            <input type="number" id="p-add-base" placeholder="Supplier Base Price (₹)" required class="form-input" style="flex: 1;" />
-            <input type="number" id="p-add-margin" placeholder="Suggested Margin (₹)" required class="form-input" style="flex: 1;" />
-          </div>
-
-          <input type="url" id="p-add-img" placeholder="Direct Image URL (e.g. Unsplash or Supabase)" required class="form-input" />
-          <textarea id="p-add-desc" placeholder="Product details, fabric, and delivery highlights..." class="form-input" style="height: 80px;"></textarea>
-
-          <button type="submit" class="btn btn-accent btn-block" style="padding: 14px;"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Product</button>
-        </form>
-      </div>
-    </div>
-
     <!-- TAB 4: RESELLER WITHDRAWALS -->
     <div id="admin-tab-withdrawals" style="display: none;">
       <h3>Reseller UPI Payout Requests</h3>
       <div class="table-card" style="margin-top: 12px;">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Request ID</th>
-              <th>Reseller ID</th>
-              <th>Payout Amount</th>
-              <th>UPI ID</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
+            <tr><th>Request ID</th><th>Reseller ID</th><th>Amount</th><th>UPI ID</th><th>Status</th><th>Action</th></tr>
           </thead>
           <tbody id="admin-withdrawals-body">
-            <tr><td colspan="6" style="text-align: center; padding: 20px;">No pending UPI withdrawal requests.</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 20px;">No pending requests.</td></tr>
           </tbody>
         </table>
       </div>
@@ -173,236 +208,6 @@
 
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-
-    const client = (SUPABASE_URL.startsWith("http") && !SUPABASE_URL.includes("YOUR_PROJECT"))
-      ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-      : null;
-
-    let orders = JSON.parse(localStorage.getItem('bluecart_orders') || '[]');
-    let categories = JSON.parse(localStorage.getItem('bluecart_categories') || '[]');
-
-    // Default categories if none exist
-    if (!categories.length) {
-      categories = [
-        { name: 'Women', icon: '👗', sub: 'TOP RESELLING PICKS', desc: 'High demand daily wear & ethnic collections', theme: 'banner-women' },
-        { name: 'Electronics', icon: '🎧', sub: 'BEST PROFIT MARGINS', desc: 'Bluetooth earbuds, smartwatches & accessories', theme: 'banner-electronics' },
-        { name: 'Men', icon: '👕', sub: 'TRENDING THIS WEEK', desc: 'Premium cotton shirts & casual wear', theme: 'banner-men' },
-        { name: 'Home', icon: '🏠', sub: 'DAILY ESSENTIALS', desc: 'Insulated vacuum flasks & kitchen utilities', theme: 'banner-home' }
-      ];
-      localStorage.setItem('bluecart_categories', JSON.stringify(categories));
-    }
-
-    function initAdminUpi() {
-      const savedUpi = localStorage.getItem('bluecart_admin_upi') || "bluecart@upi";
-      document.getElementById('admin-upi-input').value = savedUpi;
-    }
-
-    function saveAdminUpi() {
-      const upi = document.getElementById('admin-upi-input').value.trim();
-      if (!upi || !upi.includes('@')) {
-        alert('Please enter a valid UPI ID');
-        return;
-      }
-      localStorage.setItem('bluecart_admin_upi', upi);
-      alert('Admin UPI ID saved: ' + upi);
-    }
-
-    function switchAdminTab(tab) {
-      document.getElementById('admin-tab-orders').style.display = tab === 'orders' ? 'block' : 'none';
-      document.getElementById('admin-tab-categories').style.display = tab === 'categories' ? 'block' : 'none';
-      document.getElementById('admin-tab-products').style.display = tab === 'products' ? 'block' : 'none';
-      document.getElementById('admin-tab-withdrawals').style.display = tab === 'withdrawals' ? 'block' : 'none';
-
-      document.getElementById('tab-orders-btn').className = tab === 'orders' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
-      document.getElementById('tab-categories-btn').className = tab === 'categories' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
-      document.getElementById('tab-products-btn').className = tab === 'products' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
-      document.getElementById('tab-withdrawals-btn').className = tab === 'withdrawals' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
-
-      if (tab === 'categories') renderAdminCategories();
-      if (tab === 'products') populateProductCategoryDropdown();
-    }
-
-    // CATEGORY MANAGEMENT
-    async function loadCategories() {
-      if (client) {
-        const { data } = await client.from('categories').select('*');
-        if (data && data.length) {
-          categories = data;
-          localStorage.setItem('bluecart_categories', JSON.stringify(categories));
-        }
-      }
-      populateProductCategoryDropdown();
-    }
-
-    function renderAdminCategories() {
-      const tbody = document.getElementById('admin-categories-body');
-      tbody.innerHTML = categories.map((c, idx) => `
-        <tr>
-          <td><strong>${c.icon || '🛍️'} ${c.name}</strong></td>
-          <td><small style="color:var(--muted);">${c.sub || ''}</small></td>
-          <td>
-            <button onclick="deleteCategory(${idx})" class="btn btn-sm btn-outline" style="color:var(--danger); border-color:var(--danger); padding:2px 8px;">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function handleAdminAddCategory(e) {
-      e.preventDefault();
-      const newCat = {
-        name: document.getElementById('cat-add-name').value.trim(),
-        icon: document.getElementById('cat-add-icon').value.trim(),
-        sub: document.getElementById('cat-add-sub').value.trim(),
-        desc: document.getElementById('cat-add-desc').value.trim(),
-        theme: document.getElementById('cat-add-theme').value
-      };
-
-      if (client) {
-        try {
-          await client.from('categories').insert(newCat);
-        } catch (err) {
-          console.warn("Supabase category insert error:", err);
-        }
-      }
-
-      categories.push(newCat);
-      localStorage.setItem('bluecart_categories', JSON.stringify(categories));
-
-      alert(`Category "${newCat.name}" added successfully!`);
-      document.getElementById('add-category-form').reset();
-      renderAdminCategories();
-      populateProductCategoryDropdown();
-    }
-
-    async function deleteCategory(idx) {
-      const cat = categories[idx];
-      if (!confirm(`Are you sure you want to delete category "${cat.name}"?`)) return;
-
-      if (client && cat.id) {
-        await client.from('categories').delete().eq('id', cat.id);
-      }
-      categories.splice(idx, 1);
-      localStorage.setItem('bluecart_categories', JSON.stringify(categories));
-      renderAdminCategories();
-      populateProductCategoryDropdown();
-    }
-
-    function populateProductCategoryDropdown() {
-      const select = document.getElementById('p-add-cat');
-      if (!select) return;
-      select.innerHTML = categories.map(c => `<option value="${c.name}">${c.icon || '🛍️'} ${c.name}</option>`).join('');
-    }
-
-    // ORDER MANAGEMENT
-    async function loadAdminOrders() {
-      const tbody = document.getElementById('admin-orders-body');
-      
-      if (client) {
-        const { data } = await client.from('orders').select('*').order('created_at', { ascending: false });
-        if (data && data.length) orders = data;
-      }
-
-      if (!orders.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--muted);">No customer orders placed yet.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = orders.map((o) => {
-        const isUpi = o.payment_method === 'UPI';
-        const isVerified = o.payment_status === 'Verified';
-
-        return `
-          <tr>
-            <td><strong>${o.id}</strong></td>
-            <td><strong>${o.customer_name}</strong><br><small style="color:var(--muted);">${o.customer_mobile}</small></td>
-            <td>
-              <span class="badge-tag">${o.payment_method || 'COD'}</span><br>
-              ${o.upi_ref_id ? `<small style="font-weight:700; color:var(--primary);">UTR: ${o.upi_ref_id}</small>` : '<small style="color:var(--muted);">No UTR (COD)</small>'}
-            </td>
-            <td style="font-weight:700;">₹${o.total_amount}</td>
-            <td>
-              ${isVerified 
-                ? '<span class="badge-status-verified"><i class="fa-solid fa-check"></i> Verified</span>' 
-                : isUpi 
-                  ? `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending Check</span><br>
-                     <button class="btn btn-sm btn-accent" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;" onclick="verifyPayment('${o.id}')">Verify Payment</button>`
-                  : '<span style="color:var(--muted); font-size:0.75rem;">COD Pending</span>'
-              }
-            </td>
-            <td>
-              <select onchange="updateDeliveryStatus('${o.id}', this.value)" style="padding:6px; border-radius:6px; border:1px solid var(--border); font-weight:600;">
-                <option ${o.order_status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option ${o.order_status === 'Packed' ? 'selected' : ''}>Packed</option>
-                <option ${o.order_status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                <option ${o.order_status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                <option ${o.order_status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-              </select>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    async function verifyPayment(orderId) {
-      if (!confirm(`Confirm receipt of payment for Order #${orderId}?`)) return;
-
-      if (client) {
-        await client.from('orders').update({ payment_status: 'Verified', order_status: 'Packed' }).eq('id', orderId);
-      }
-
-      const idx = orders.findIndex(o => o.id === orderId);
-      if (idx !== -1) {
-        orders[idx].payment_status = 'Verified';
-        orders[idx].order_status = 'Packed';
-      }
-      localStorage.setItem('bluecart_orders', JSON.stringify(orders));
-      alert(`Payment for Order #${orderId} verified!`);
-      loadAdminOrders();
-    }
-
-    async function updateDeliveryStatus(orderId, newStatus) {
-      if (client) {
-        await client.from('orders').update({ order_status: newStatus }).eq('id', orderId);
-      }
-      const idx = orders.findIndex(o => o.id === orderId);
-      if (idx !== -1) orders[idx].order_status = newStatus;
-      localStorage.setItem('bluecart_orders', JSON.stringify(orders));
-      alert(`Order #${orderId} status changed to: ${newStatus}`);
-      loadAdminOrders();
-    }
-
-    async function handleAdminAddProduct(e) {
-      e.preventDefault();
-      const newProduct = {
-        id: 'p' + Math.floor(100 + Math.random() * 900),
-        name: document.getElementById('p-add-name').value,
-        category: document.getElementById('p-add-cat').value,
-        mrp: Number(document.getElementById('p-add-mrp').value),
-        base_price: Number(document.getElementById('p-add-base').value),
-        default_reseller_profit: Number(document.getElementById('p-add-margin').value),
-        images: [document.getElementById('p-add-img').value],
-        description: document.getElementById('p-add-desc').value,
-        is_active: true
-      };
-
-      if (client) {
-        const { error } = await client.from('products').insert(newProduct);
-        if (error) { alert(error.message); return; }
-      }
-
-      alert(`Product "${newProduct.name}" published under "${newProduct.category}" successfully!`);
-      document.getElementById('add-product-form').reset();
-      switchAdminTab('orders');
-    }
-
-    initAdminUpi();
-    loadCategories();
-    loadAdminOrders();
-  </script>
+  <script src="admin.js"></script>
 </body>
 </html>
