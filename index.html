@@ -41,53 +41,43 @@
 
     <!-- TABS -->
     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; overflow-x: auto;">
-      <button class="btn btn-primary btn-sm" id="tab-orders-btn" onclick="switchAdminTab('orders')"><i class="fa-solid fa-box"></i> Orders & UPI</button>
+      <button class="btn btn-primary btn-sm" id="tab-orders-btn" onclick="switchAdminTab('orders')"><i class="fa-solid fa-box"></i> Orders & Address Details</button>
       <button class="btn btn-outline btn-sm" id="tab-products-btn" onclick="switchAdminTab('products')"><i class="fa-solid fa-boxes-stacked"></i> Manage Products</button>
       <button class="btn btn-outline btn-sm" id="tab-categories-btn" onclick="switchAdminTab('categories')"><i class="fa-solid fa-layer-group"></i> Categories</button>
       <button class="btn btn-outline btn-sm" id="tab-withdrawals-btn" onclick="switchAdminTab('withdrawals')"><i class="fa-solid fa-money-bill-transfer"></i> Reseller Payouts</button>
     </div>
 
-    <!-- TAB 1: ORDER MANAGEMENT -->
+    <!-- TAB 1: ORDER MANAGEMENT WITH PRODUCT PHOTO & FULL ADDRESS -->
     <div id="admin-tab-orders">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h3>Orders & Payment Verification</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <h3>Customer Orders & Delivery Addresses</h3>
+          <small style="color:var(--muted);">View ordered product photo, pricing and customer shipping destination</small>
+        </div>
         <button class="btn btn-sm btn-outline" onclick="loadAdminOrders()"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </div>
 
-      <div class="table-card">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Payment & UTR Ref</th>
-              <th>Amount</th>
-              <th>Payment Status</th>
-              <th>Delivery Status</th>
-            </tr>
-          </thead>
-          <tbody id="admin-orders-body">
-            <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading orders...</td></tr>
-          </tbody>
-        </table>
+      <div id="admin-orders-list-container" style="display: flex; flex-direction: column; gap: 14px;">
+        <p style="text-align:center; padding:20px;">Loading customer orders...</p>
       </div>
     </div>
 
-    <!-- TAB 2: PRODUCT MANAGEMENT (WITH COD ON/OFF) -->
+    <!-- TAB 2: PRODUCT MANAGEMENT (WITH 3 PHOTOS & EDIT) -->
     <div id="admin-tab-products" style="display: none;">
       <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
         
-        <!-- Add Product Form -->
-        <div class="card" style="padding: 20px;">
-          <h3>Add New Wholesale Product</h3>
-          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">This product will instantly appear in the reseller catalog.</p>
+        <div class="card" style="padding: 20px;" id="product-form-card">
+          <h3 id="form-heading"><i class="fa-solid fa-plus-circle"></i> Add New Wholesale Product</h3>
+          <p id="form-subheading" style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">Add product with up to 3 photos. Changes sync live.</p>
 
           <form id="add-product-form" onsubmit="handleAdminAddProduct(event)" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="hidden" id="p-edit-id" value="" />
+
             <input type="text" id="p-add-name" placeholder="Product Title (e.g. Silk Printed Saree)" required class="form-input" />
             
             <div style="display: flex; gap: 10px;">
               <select id="p-add-cat" class="form-input" style="flex: 1;" required>
-                <!-- Populated dynamically from categories -->
+                <!-- Populated dynamically -->
               </select>
               <input type="number" id="p-add-mrp" placeholder="MRP (₹)" required class="form-input" style="flex: 1;" />
             </div>
@@ -97,10 +87,36 @@
               <input type="number" id="p-add-margin" placeholder="Suggested Margin (₹)" required class="form-input" style="flex: 1;" />
             </div>
 
-            <input type="url" id="p-add-img" placeholder="Product Image URL (e.g. https://...)" required class="form-input" />
-            <textarea id="p-add-desc" placeholder="Product description, size details..." class="form-input" style="height: 70px;"></textarea>
+            <!-- 3 PRODUCT PHOTO INPUTS WITH PREVIEW -->
+            <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 8px; display: block;">
+                <i class="fa-regular fa-images" style="color:var(--primary);"></i> Product Photos (Add up to 3 Image URLs):
+              </label>
+              
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <small style="font-weight: 700; color: var(--muted);">Photo 1 (Main Front Cover - നിർബന്ധം):</small>
+                  <input type="url" id="p-add-img1" placeholder="https://... (Photo 1 URL)" required class="form-input" style="margin-top:2px;" />
+                </div>
+                <div>
+                  <small style="font-weight: 700; color: var(--muted);">Photo 2 (Side / Model Angle - ഓപ്ഷണൽ):</small>
+                  <input type="url" id="p-add-img2" placeholder="https://... (Photo 2 URL)" class="form-input" style="margin-top:2px;" />
+                </div>
+                <div>
+                  <small style="font-weight: 700; color: var(--muted);">Photo 3 (Back / Fabric Detail - ഓപ്ഷണൽ):</small>
+                  <input type="url" id="p-add-img3" placeholder="https://... (Photo 3 URL)" class="form-input" style="margin-top:2px;" />
+                </div>
+              </div>
 
-            <!-- CASH ON DELIVERY ON/OFF SETTING -->
+              <!-- LIVE PHOTO PREVIEWS WHILE EDITING -->
+              <div id="edit-img-previews" style="display: none; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                <small style="display:block; width:100%; font-weight:700; color:var(--muted);">Current Photos:</small>
+                <div id="edit-previews-container" style="display:flex; gap:10px;"></div>
+              </div>
+            </div>
+
+            <textarea id="p-add-desc" placeholder="Product description, size, fabric highlights..." class="form-input" style="height: 70px;"></textarea>
+
             <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;">
               <div>
                 <strong>Cash on Delivery (COD) Status:</strong>
@@ -112,24 +128,31 @@
               </select>
             </div>
 
-            <button type="submit" class="btn btn-accent btn-block" style="padding: 12px;"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Product</button>
+            <div style="display: flex; gap: 10px; margin-top: 6px;">
+              <button type="submit" id="btn-submit-product" class="btn btn-accent" style="flex: 1; padding: 12px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Publish Product
+              </button>
+              <button type="button" id="btn-cancel-edit" class="btn btn-outline" style="display: none; padding: 12px;" onclick="cancelProductEdit()">
+                <i class="fa-solid fa-xmark"></i> Cancel Edit
+              </button>
+            </div>
           </form>
         </div>
 
-        <!-- Live Products List Table with Quick COD Switch -->
+        <!-- Products List Table with Edit/Delete -->
         <div class="card" style="padding: 20px;">
           <h3>Live Store Products (<span id="admin-products-count">0</span>)</h3>
           <div class="table-card" style="margin-top: 12px;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Image</th>
+                  <th>Photos</th>
                   <th>Product Name</th>
                   <th>Category</th>
                   <th>Base Price</th>
                   <th>Margin</th>
                   <th>COD Mode</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="admin-products-table-body"></tbody>
@@ -140,54 +163,37 @@
       </div>
     </div>
 
-    <!-- TAB 3: CATEGORY MANAGEMENT (WITH PHOTO URL) -->
+    <!-- TAB 3: CATEGORIES -->
     <div id="admin-tab-categories" style="display: none;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        
-        <!-- Create Category Form -->
         <div class="card" style="padding: 20px;">
           <h3>Create New Category</h3>
-          <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 14px;">Add custom category with a real photo.</p>
-
-          <form id="add-category-form" onsubmit="handleAdminAddCategory(event)" style="display: flex; flex-direction: column; gap: 12px;">
-            <input type="text" id="cat-add-name" placeholder="Category Name (e.g. Kids Wear, Bags)" required class="form-input" />
-            
-            <!-- CATEGORY PHOTO URL INPUT -->
-            <input type="url" id="cat-add-photo" placeholder="Category Photo URL (e.g. https://...)" required class="form-input" />
-
-            <input type="text" id="cat-add-sub" placeholder="Tagline (e.g. TOP PICKS, 50% OFF)" required class="form-input" />
-            <input type="text" id="cat-add-desc" placeholder="Short description (e.g. Dresses, toys & daily essentials)" required class="form-input" />
-            
-            <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted);">Banner Color Theme:</label>
+          <form id="add-category-form" onsubmit="handleAdminAddCategory(event)" style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+            <input type="text" id="cat-add-name" placeholder="Category Name (e.g. Kids Wear)" required class="form-input" />
+            <input type="url" id="cat-add-photo" placeholder="Category Photo URL (https://...)" required class="form-input" />
+            <input type="text" id="cat-add-sub" placeholder="Tagline (e.g. TOP PICKS)" required class="form-input" />
+            <input type="text" id="cat-add-desc" placeholder="Short description" required class="form-input" />
             <select id="cat-add-theme" class="form-input">
               <option value="banner-women">Pink Gradient</option>
               <option value="banner-electronics">Blue Gradient</option>
               <option value="banner-men">Purple Gradient</option>
               <option value="banner-home">Green Gradient</option>
             </select>
-
-            <button type="submit" class="btn btn-accent btn-block" style="padding: 10px;"><i class="fa-solid fa-folder-plus"></i> Save Category</button>
+            <button type="submit" class="btn btn-accent btn-block" style="padding: 10px;">Save Category</button>
           </form>
         </div>
 
-        <!-- Active Categories List with Photos -->
         <div class="card" style="padding: 20px;">
           <h3>Active Categories</h3>
           <div class="table-card" style="margin-top: 12px;">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>Photo</th>
-                  <th>Category</th>
-                  <th>Tagline</th>
-                  <th>Action</th>
-                </tr>
+                <tr><th>Photo</th><th>Category</th><th>Tagline</th><th>Action</th></tr>
               </thead>
               <tbody id="admin-categories-body"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
 
